@@ -45,30 +45,65 @@ export default function Callback() {
         .order("exp", { ascending: false })
         .limit(10);
 
-      const { data: disposals } = await supabase
-        .from("disposal")
-        .select("*")
-        .eq("user_id", user.id);
+      // const userData = {
+      //   id: user.id,
+      //   name: user.user_metadata.name,
+      //   email: user.email,
+      //   image: user.user_metadata.avatar_url,
+      //   region,
+      //   exp: existingUser?.exp || 0,
+      //   level: existingUser?.level || 1,
+      //   total_disposal: existingUser?.total_disposal || 0,
+      //   topUsersRegion: topUsersRegion || [],
+      //   topUsersGlobal: topUsersGlobal || [],
+      //   disposals: (disposals as Disposal[]) || [],
+      // };
 
-      const userData = {
-        id: user.id,
-        name: user.user_metadata.name,
-        email: user.email,
-        image: user.user_metadata.avatar_url,
-        region,
-        exp: existingUser?.exp || 0,
-        level: existingUser?.level || 1,
-        total_disposal: existingUser?.total_disposal || 0,
-        topUsersRegion: topUsersRegion || [],
-        topUsersGlobal: topUsersGlobal || [],
-        disposals: (disposals as Disposal[]) || [],
-      };
+      // setUser(userData as User);
 
-      setUser(userData as User);
+      // if (!existingUser) {
+      //   await supabase.from("user").insert(userData);
+      // }
 
-      if (!existingUser) {
+      let userData;
+
+      if (existingUser) {
+        const { data: disposals } = await supabase
+          .from("disposal")
+          .select("*")
+          .eq("user_id", user.id);
+
+        userData = {
+          id: user.id,
+          name: user.user_metadata.name,
+          email: user.email,
+          image: user.user_metadata.avatar_url,
+          region,
+          exp: existingUser.exp || 0,
+          level: existingUser.level || 1,
+          total_disposal: existingUser.total_disposal || 0,
+          topUsersRegion: topUsersRegion || [],
+          topUsersGlobal: topUsersGlobal || [],
+          disposals: (disposals as Disposal[]) || [],
+        };
+      } else {
+        userData = {
+          id: user.id,
+          name: user.user_metadata.name,
+          email: user.email,
+          image: user.user_metadata.avatar_url,
+          region,
+          exp: 0,
+          level: 1,
+          total_disposal: 0,
+          topUsersRegion: topUsersRegion || [],
+          topUsersGlobal: topUsersGlobal || [],
+          disposals: [],
+        };
         await supabase.from("user").insert(userData);
       }
+
+      setUser(userData as User);
 
       router.push("/dashboard");
     };
